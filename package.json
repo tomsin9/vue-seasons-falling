@@ -1,0 +1,46 @@
+{
+  "name": "vue-seasons-falling",
+  "version": "0.1.0",
+  "description": "Seasons falling component for Vue 3 — spring petals, summer rain, autumn leaves, winter snow",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vue-seasons-falling.umd.js",
+  "module": "./dist/vue-seasons-falling.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-seasons-falling.es.js",
+      "require": "./dist/vue-seasons-falling.umd.js"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomsin9/vue-seasons-falling.git"
+  },
+  "keywords": [
+    "vue",
+    "seasons",
+    "falling",
+    "snow",
+    "rain",
+    "petals",
+    "leaves"
+  ],
+  "author": "Tom Sin",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/compiler-sfc": "^3.5.28",
+    "vite": "^5.0.0",
+    "vue": "^3.5.0"
+  }
+}
