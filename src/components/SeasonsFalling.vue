@@ -1,19 +1,23 @@
 <template>
-    <canvas class="seasons-falling-canvas"></canvas>
+    <canvas
+        class="seasons-falling-canvas"
+        :class="{ 'is-fullscreen': fullScreen }"
+    ></canvas>
 </template>
 
 <script>
 export default {
     props: {
+        autoSeason: { type: Boolean, default: false },
         season: {
             type: String,
-            default: 'winter', // 'spring', 'summer', 'autumn', 'winter'
+            default: 'spring', // 'spring', 'summer', 'autumn', 'winter'
         },
         theme: {
             type: String,
-            default: 'light'   // 'light' | 'dark' — 影響雪花色調與整體透明度
+            default: 'light'   // 'light' | 'dark' — affects snowflake tint and overall opacity
         },
-        amount: { type: Number, default: 50 },
+        amount: { type: Number, default: 100 },
         size: { type: Number, default: 5 },
         speed: { type: Number, default: 1.5 },
         wind: { type: Number, default: 0 },
@@ -22,7 +26,9 @@ export default {
         swing: { type: Number, default: 1 },
         image: { type: String, default: null },
         zIndex: { type: Number, default: null },
-        resize: { type: Boolean, default: true }
+        resize: { type: Boolean, default: true },
+        fullScreen: { type: Boolean, default: false },  // false: fill parent layer
+        mouseInteraction: { type: Boolean, default: false }
     },
     mounted() {
         const self = this;
@@ -31,6 +37,25 @@ export default {
         let canvasHeight, canvasWidth;
         let flakes = [];
         let loadedImage = null;
+        let currentActiveSeason = self.season;
+        let mouse = { x: -1000, y: -1000 }; // initial position outside the screen
+
+        const onMouseMove = (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        };
+
+        const onTouchMove = (e) => {
+            if (e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        };
+
+        // Store handlers for cleanup in beforeUnmount
+        self._onMouseMove = onMouseMove;
+        self._onTouchMove = onTouchMove;
+        self._animationId = null;
 
         const rgbCache = {};
         function getRgbCached(str) {
@@ -38,7 +63,7 @@ export default {
             return rgbCache[str];
         }
 
-        // 季節預設配置（winter 顏色在 drawShape 依 theme 再覆寫）
+        // Default season configs (winter color is overridden in drawShape by theme)
         const seasonConfigs = {
             spring: { color: '#ffb7c5', swing: 2, speed: 0.8, size: 4 },
             summer: { color: '#7dd3fc', swing: 0, speed: 1.2, size: 1 },
@@ -47,35 +72,67 @@ export default {
         };
 
         function updateCanvasSize() {
-            canvasHeight = CANVAS.offsetHeight;
-            canvasWidth = CANVAS.offsetWidth;
-            CANVAS.height = canvasHeight;
+            if (self.fullScreen) {
+                canvasWidth = window.innerWidth;
+                canvasHeight = window.innerHeight;
+            } else {
+                const parent = CANVAS.parentElement;
+                canvasWidth = parent ? parent.offsetWidth : window.innerWidth;
+                canvasHeight = parent ? parent.offsetHeight : window.innerHeight;
+            }
             CANVAS.width = canvasWidth;
+            CANVAS.height = canvasHeight;
+        }
+
+        function getSeasonByMonth() {
+            const month = new Date().getMonth() + 1; // getMonth() 是 0-11
+            if (month >= 3 && month <= 5) return 'spring';
+            if (month >= 6 && month <= 8) return 'summer';
+            if (month >= 9 && month <= 11) return 'autumn';
+            return 'winter';
         }
 
         function init() {
+            if (self.autoSeason) {
+                currentActiveSeason = getSeasonByMonth();
+            } else {
+                currentActiveSeason = self.season;
+            }
+
             updateCanvasSize();
             CANVAS.style.zIndex = self.zIndex || 'auto';
+
+            // Amount by screen area: sqrt curve + min/max for consistent density from phone to ultrawide/4K
+            const baseArea = 1920 * 1080;
+            const currentArea = canvasWidth * canvasHeight;
+            const ratio = Math.sqrt(currentArea / baseArea);
+            const finalAmount = Math.max(80, Math.min(600, Math.floor(self.amount * ratio)));
+
             flakes = [];
-            for (let i = 0; i < self.amount; i++) {
+            for (let i = 0; i < finalAmount; i++) {
                 flakes.push(createFlake(true));
             }
             if (self.image) {
                 loadedImage = new Image();
                 loadedImage.src = self.image;
             }
-            requestAnimationFrame(snow);
+
+            if (self.mouseInteraction) {
+                window.addEventListener('mousemove', self._onMouseMove);
+                window.addEventListener('touchmove', self._onTouchMove, { passive: true });
+            }
+            self._animationId = requestAnimationFrame(snow);
         }
 
         function createFlake(isInitial = false) {
-            const config = seasonConfigs[self.season] || seasonConfigs.winter;
+            const config = seasonConfigs[currentActiveSeason] || seasonConfigs.winter;
             const baseSize = (self.size || config.size) * 0.8;
             const r = random(baseSize * 0.3, baseSize * 2) / 2;
             const x = random(0, canvasWidth);
             const y = isInitial ? random(0, canvasHeight) : -r * 4;
 
-            // Winter: 保持原有邏輯不變
-            if (self.season === 'winter') {
+            // Winter: keep original logic unchanged
+            if (currentActiveSeason === 'winter') {
                 return {
                     x, y, r,
                     velY: random(self.speed, self.speed * 1.5) * Math.pow(r / baseSize, 1.5),
@@ -88,8 +145,8 @@ export default {
                 };
             }
 
-            // Summer: 大雨 — 統一高速、無擺動、隨風斜落
-            if (self.season === 'summer') {
+            // Summer: raining — uniform high speed, no swing, wind-driven slant
+            if (currentActiveSeason === 'summer') {
                 return {
                     x, y, r,
                     velY: self.speed * 6,
@@ -101,8 +158,8 @@ export default {
                 };
             }
 
-            // Autumn: 疏落感 — 一半粒子 opacity 0；大小差矩收窄
-            if (self.season === 'autumn') {
+            // Autumn: sparse feel — half of particles opacity 0; narrower size range
+            if (currentActiveSeason === 'autumn') {
                 const baseSpeed = (config.speed != null ? config.speed : self.speed);
                 const rAutumn = random(baseSize * 1.5, baseSize * 3) / 2;
                 const yAutumn = isInitial ? y : -rAutumn * 4;
@@ -124,8 +181,8 @@ export default {
                 };
             }
 
-            // Spring: 櫻花 — 平滑 S 型軌跡，chaos/oscillation 僅在 createFlake 時決定
-            if (self.season === 'spring') {
+            // Spring: cherry blossom — smooth S-curve path; chaos/oscillation set only in createFlake
+            if (currentActiveSeason === 'spring') {
                 const baseSpeed = (config.speed != null ? config.speed : self.speed);
                 const velY = baseSpeed * random(0.48, 0.58);
                 const rSpring = r * 1.25;
@@ -145,7 +202,7 @@ export default {
                 };
             }
 
-            // Fallback (其他季節沿用 winter 邏輯)
+            // Fallback (other seasons use winter logic)
             return {
                 x, y, r,
                 velY: random(self.speed, self.speed * 1.5) * Math.pow(r / baseSize, 1.5),
@@ -159,7 +216,7 @@ export default {
         }
 
         function drawShape(ctx, flake) {
-            const season = self.season;
+            const season = currentActiveSeason;
             const theme = self.theme;
             ctx.save();
 
@@ -228,15 +285,31 @@ export default {
         function snow() {
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-            const season = self.season;
+            const season = currentActiveSeason;
             const windBase = self.wind * 0.5;
-            const isSummer = season === 'summer';
+            const isSummer = currentActiveSeason === 'summer';
             const bottomMargin = isSummer ? 100 : 0;
             const useImage = loadedImage && loadedImage.complete;
 
             for (let i = 0; i < flakes.length; i++) {
                 const flake = flakes[i];
                 flake.y += flake.velY;
+
+                if (self.mouseInteraction) {
+                    const dx = flake.x - mouse.x;
+                    const dy = flake.y - mouse.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy); // Pythagorean theorem to calculate distance
+                    const forceRadius = 100; // The force field radius, flakes within 100px will be blown away
+
+                    if (distance < forceRadius) {
+                        const force = (forceRadius - distance) / forceRadius; // Force is stronger when closer (0 to 1)
+                        const moveX = (dx / distance) * force * 10; // The strength of the push is 10
+                        const moveY = (dy / distance) * force * 10;
+                        
+                        flake.x += moveX;
+                        flake.y += moveY;
+                    }
+                }
 
                 const windX = flake.velX != null ? flake.velX : windBase;
 
@@ -265,13 +338,32 @@ export default {
                     Object.assign(flake, createFlake(false));
                 }
             }
-            requestAnimationFrame(snow);
+            self._animationId = requestAnimationFrame(snow);
         }
+
+        // Keep reference so we can remove the same listener in beforeUnmount
+        self._onResize = updateCanvasSize;
 
         init();
 
         if (self.resize) {
-            window.addEventListener('resize', updateCanvasSize);
+            window.addEventListener('resize', self._onResize);
+        }
+    },
+    beforeUnmount() {
+        if (this._animationId != null) {
+            cancelAnimationFrame(this._animationId);
+            this._animationId = null;
+        }
+        if (this._onResize) {
+            window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
+        if (this.mouseInteraction && this._onMouseMove) {
+            window.removeEventListener('mousemove', this._onMouseMove);
+            window.removeEventListener('touchmove', this._onTouchMove);
+            this._onMouseMove = null;
+            this._onTouchMove = null;
         }
     }
 }
@@ -296,12 +388,20 @@ function getRgb(str) {
 </script>
 
 <style scoped>
+/* Default: fill parent layer without breaking user layout */
 .seasons-falling-canvas {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none; /* 確保不會擋住底層按鈕點擊 */
+    pointer-events: none;
+}
+
+/* Fullscreen mode: cover entire viewport */
+.seasons-falling-canvas.is-fullscreen {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
 }
 </style>

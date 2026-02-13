@@ -1,72 +1,74 @@
+<script setup>
+import { ref } from 'vue';
+import SeasonsFalling from './components/SeasonsFalling.vue';
+
+const currentSeason = ref('spring');
+const seasons = ['spring', 'summer', 'autumn', 'winter'];
+const theme = ref('light'); // 'light' | 'dark'
+
+function changeSeason(s) {
+  currentSeason.value = s;
+}
+
+function toggleTheme() {
+  theme.value = theme.value === 'light' ? 'dark' : 'light';
+}
+</script>
+
 <template>
   <div id="app" :class="theme">
     <div class="dashboard">
-      <h1>Vue Seasons Falling</h1>
-      <div class="btn-group">
-        <button v-for="s in seasons" :key="s" 
-          @click="changeSeason(s)" 
-          :class="{ active: currentSeason === s }">
-          {{ s.toUpperCase() }}
-        </button>
-        <button class="theme-btn" @click="toggleTheme" :title="theme === 'dark' ? 'Switch to light' : 'Switch to dark'">
-          {{ theme === 'dark' ? '☀️ Light' : '🌙 Dark' }}
-        </button>
+      <h1>vue-seasons-falling</h1>
+
+      <div class="btn-group-container">
+        <div class="btn-group">
+          <button v-for="s in seasons" :key="s" 
+            @click="changeSeason(s)" 
+            :class="{ active: currentSeason === s }">
+            {{ s.toUpperCase() }}
+          </button>
+          
+          <button class="theme-btn" @click="toggleTheme" 
+            :title="theme === 'dark' ? 'Switch to light' : 'Switch to dark'">
+              {{ theme === 'dark' ? '☀️ LIGHT MODE' : '🌙 DARK MODE' }}
+          </button>
+        </div>
       </div>
+
+
       <div class="stats">
-        <span>Particles: 200</span> | 
-        <span>Wind: 0.5</span>
+        <span>Particles: 150</span> | 
+        <span>Wind: 0.2</span>
       </div>
     </div>
 
-    <SeasonsFalling 
-      :key="currentSeason"
+    <!-- Fullscreen Mode -->
+    <!-- :key forces re-render when season changes -->
+    <SeasonsFalling
+      :key="'bg-' + currentSeason" 
       :season="currentSeason"
       :theme="theme"
-      :amount="200"
-      :size="4"
-      :speed="1.5"
-      :wind="0.5"
-      :swing="1"
-      :opacity="0.8"
+      :amount="150"
+      :wind="0.2"
+      fullScreen
     />
+
+    <!-- Zone Mode -->
+    <!-- <p class="banner-label" 
+     style="position: relative; z-index: 10; text-align: center; margin: 24px 0 0; font-size: 12px; color: #888;">
+     ↓ Zone Mode (Fill parent layer)
+    </p>
+    <div class="banner-demo" 
+      style="position: relative; width: 100%; max-width: 600px; height: 280px; margin: 8px auto 20px; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+      <SeasonsFalling
+        :key="'banner-' + currentSeason"
+        :season="currentSeason"
+        :theme="theme"
+      />
+    </div> -->
+
   </div>
 </template>
-
-<script>
-import SeasonsFalling from './components/SeasonsFalling.vue';
-
-export default {
-  name: 'app',
-  components: { SeasonsFalling },
-  data() {
-    return {
-      currentSeason: 'autumn',
-      seasons: ['spring', 'summer', 'autumn', 'winter'],
-      theme: 'light', // 'light' | 'dark'
-      // 根據季節自動換背景色，測試視覺效果
-      bgColors: {
-        spring: '#fce4ec', // 淺粉
-        summer: '#e0f7fa', // 淺藍
-        autumn: '#fff3e0', // 淺橘
-        winter: '#1a1a1a'  // 深灰（Google AI Studio 風格）
-      }
-    }
-  },
-  computed: {
-    bgColor() {
-      return this.bgColors[this.currentSeason];
-    }
-  },
-  methods: {
-    changeSeason(s) {
-      this.currentSeason = s;
-    },
-    toggleTheme() {
-      this.theme = this.theme === 'light' ? 'dark' : 'light';
-    }
-  }
-}
-</script>
 
 <style>
 /* 讓畫布撐滿全螢幕 */
@@ -80,7 +82,7 @@ html, body, #app {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-#app.light {
+#app {
   background: #fff;
 }
 
@@ -123,10 +125,6 @@ html, body, #app {
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.btn-group button.theme-btn {
-  opacity: 0.9;
-}
-
 /* dark theme */
 #app.dark h1 { color: #ccc; }
 #app.dark .btn-group button {
@@ -150,18 +148,3 @@ html, body, #app {
   color: #999;
 }
 </style>
-
-<!-- <template>
-  <div id="app">
-    <SeasonsFalling />
-  </div>
-</template>
-
-<script>
-import SeasonsFalling from './components/SeasonsFalling.vue';
-
-export default {
-  name: 'app',
-  components: { SeasonsFalling }
-}
-</script> -->

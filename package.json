@@ -1,7 +1,7 @@
 {
   "name": "vue-seasons-falling",
-  "version": "0.1.0",
-  "description": "Seasons falling component for Vue 3 — spring petals, summer rain, autumn leaves, winter snow",
+  "version": "0.2.0",
+  "description": "A lightweight Vue 3 seasonal falling particles component (Sakura, Rain, Maple, Snow).",
   "type": "module",
   "files": [
     "dist"
