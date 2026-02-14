@@ -418,9 +418,9 @@ function getRgb(str) {
 }
 
 .seasons-falling-canvas.is-fullscreen {
-    position: fixed;
-    inset: 0; 
-    width: 100%;
-    height: 100%;
+    position: fixed !important;
+    inset: 0 !important; 
+    width: 100vw !important;
+    height: 100vh !important;
 }
 </style>

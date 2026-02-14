@@ -11,19 +11,14 @@ A high-performance Vue 3 particle component with four seasonal effects: **Spring
 
 ## Changelog
 
-### [0.2.1] — 2026-02-14
+## What's New in v0.2.x
 
-- **Fixed** — Mobile canvas stretching (device pixel ratio); interaction coordinate offset; smooth re-scale on orientation change.
-- **Changed** — Demo UI refactor, CSS variables for theming.
+- **Auto-Season Mode** — Automatically switches between seasons based on the current month.
+- **Interactive Force Field** — Particles react to mouse and touch, drifting away as you interact.
+- **Mobile Optimized** — Fixed canvas distortion and added smart density scaling for consistent performance from mobile to 4K.
+- **Layout Flexibility** — Seamlessly switch between `fullScreen` background or nested container mode.
 
-### [0.2.0]
-
-- **Auto-Season Mode** — Switches Spring / Summer / Autumn / Winter by current month.
-- **Interactive Force Field** — Particles react to mouse and touch.
-- **Layout Flexibility** — Fullscreen background or nested container (zone) mode.
-- **Smart Density Scaling** — Square-root area scaling: consistent density from mobile to 4K (80–600 particles).
-
-Full history: [CHANGELOG.md](CHANGELOG.md)
+[Full CHANGELOG.md](./CHANGELOG.md)
 
 ---
 

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-02-14
+
+### Improved
+- **Zero-Config Styling**: Integrated `vite-plugin-css-injected-by-js`. Users no longer need to manually import CSS file. Just import the component and it works!
+- **Bundle Optimization**: Minimized package size by bundling styles directly into the JavaScript entry point.
+
+### Fixed
+- **Prop Logic**: Improved `fullScreen` prop reliability to ensure the canvas correctly covers the viewport even when nested in deep containers.
+
 ## [0.2.1] - 2026-02-14
 
 ### Fixed

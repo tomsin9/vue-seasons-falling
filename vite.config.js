@@ -1,13 +1,17 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 
 export default defineConfig(({ command }) => {
   const isDemo = process.env.BUILD_TARGET === 'demo';
 
   // basic configuration
   const config = {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      !isDemo && cssInjectedByJsPlugin(),
+    ],
     server: {
       port: 3000,
       open: true

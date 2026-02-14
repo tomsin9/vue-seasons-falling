@@ -1,6 +1,6 @@
 {
   "name": "vue-seasons-falling",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A lightweight Vue 3 seasonal falling particles component (Sakura, Rain, Maple, Snow).",
   "type": "module",
   "files": [
@@ -42,7 +42,8 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/compiler-sfc": "^3.5.13",
     "cross-env": "^7.0.3",
-    "vite": "^6.0.0", 
+    "vite": "^6.0.0",
+    "vite-plugin-css-injected-by-js": "^3.5.2",
     "vue": "^3.5.0"
   }
 }
