@@ -5,14 +5,25 @@
 
 A high-performance Vue 3 particle component with four seasonal effects: **Spring** (Sakura petals), **Summer** (rain), **Autumn** (maple leaves), and **Winter** (snow). Built with the native Canvas API for silky-smooth performance.
 
+[**🔗 Explore Live Demo & Playground**](https://tomsin9.github.io/vue-seasons-falling/)
+
 ---
 
-## What's New in v0.2.0
+## Changelog
 
-- **Auto-Season Mode** — Automatically switches Spring / Summer / Autumn / Winter by current month.
-- **Interactive Force Field** — Particles react to mouse and touch, drifting away as you interact.
+### [0.2.1] — 2026-02-14
+
+- **Fixed** — Mobile canvas stretching (device pixel ratio); interaction coordinate offset; smooth re-scale on orientation change.
+- **Changed** — Demo UI refactor, CSS variables for theming.
+
+### [0.2.0]
+
+- **Auto-Season Mode** — Switches Spring / Summer / Autumn / Winter by current month.
+- **Interactive Force Field** — Particles react to mouse and touch.
 - **Layout Flexibility** — Fullscreen background or nested container (zone) mode.
 - **Smart Density Scaling** — Square-root area scaling: consistent density from mobile to 4K (80–600 particles).
+
+Full history: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
@@ -35,8 +46,7 @@ import SeasonsFalling from 'vue-seasons-falling';
   <SeasonsFalling
     season="spring"
     fullScreen
-    :amount="150"
-    :wind="0.1"
+    :amount="200"
   />
 </template>
 ```
@@ -67,11 +77,11 @@ import SeasonsFalling from 'vue-seasons-falling';
 
 ## Credits
 
-- **Original snowfall**: [Fuxy526/vue-snowf](https://github.com/Fuxy526/vue-snowf)
+- **Original component**: [Fuxy526/vue-snowf](https://github.com/Fuxy526/vue-snowf)
 - **Modernized & enhanced**: [Tom Sin](https://github.com/tomsin9)
 
 ---
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+[MIT](LICENSE) © Tom Sin

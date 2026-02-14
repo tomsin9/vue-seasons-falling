@@ -4,7 +4,11 @@ import SeasonsFalling from './components/SeasonsFalling.vue';
 
 const currentSeason = ref('spring');
 const seasons = ['spring', 'summer', 'autumn', 'winter'];
-const theme = ref('light'); // 'light' | 'dark'
+const theme = ref('light');
+
+// controls
+const isMouseActive = ref(true);
+const windStrength = ref(0); // default 0
 
 function changeSeason(s) {
   currentSeason.value = s;
@@ -12,6 +16,18 @@ function changeSeason(s) {
 
 function toggleTheme() {
   theme.value = theme.value === 'light' ? 'dark' : 'light';
+}
+
+function toggleMouse() {
+  isMouseActive.value = !isMouseActive.value;
+}
+
+function nextWind() {
+  // value loop: -0.5 -> 0 -> 0.5 -> 2.0 -> -0.5
+  const steps = [-2.0, -0.5, 0, 0.5, 2.0];
+  const currentIndex = steps.indexOf(windStrength.value);
+  const nextIndex = (currentIndex + 1) % steps.length;
+  windStrength.value = steps[nextIndex];
 }
 </script>
 
@@ -27,124 +43,137 @@ function toggleTheme() {
             :class="{ active: currentSeason === s }">
             {{ s.toUpperCase() }}
           </button>
+        </div>
+
+        <div class="btn-group extra-controls" style="margin-top: 12px;">
+          <button @click="toggleMouse" :class="{ active: isMouseActive }">
+            MOUSE FORCE: {{ isMouseActive ? 'ON' : 'OFF' }}
+          </button>
           
-          <button class="theme-btn" @click="toggleTheme" 
-            :title="theme === 'dark' ? 'Switch to light' : 'Switch to dark'">
-              {{ theme === 'dark' ? '☀️ LIGHT MODE' : '🌙 DARK MODE' }}
+          <button @click="nextWind" :class="{ active: windStrength !== 0 }">
+            WIND: {{ windStrength > 0 ? '+' : '' }}{{ windStrength }}
+          </button>
+
+          <button class="theme-btn" @click="toggleTheme">
+              {{ theme === 'dark' ? '☀️ LIGHT' : '🌙 DARK' }}
           </button>
         </div>
       </div>
 
-
       <div class="stats">
-        <span>Particles: 150</span> | 
-        <span>Wind: 0.2</span>
+        <span>Particles: 200</span> | 
+        <span>v0.2.1 Stable</span>
       </div>
     </div>
 
-    <!-- Fullscreen Mode -->
-    <!-- :key forces re-render when season changes -->
     <SeasonsFalling
-      :key="'bg-' + currentSeason" 
+      :key="`sf-${currentSeason}-${isMouseActive}-${windStrength}`" 
       :season="currentSeason"
       :theme="theme"
-      :amount="150"
-      :wind="0.2"
+      :amount="200"
+      :wind="windStrength"
+      :mouseInteraction="isMouseActive"
       fullScreen
     />
-
-    <!-- Zone Mode -->
-    <!-- <p class="banner-label" 
-     style="position: relative; z-index: 10; text-align: center; margin: 24px 0 0; font-size: 12px; color: #888;">
-     ↓ Zone Mode (Fill parent layer)
-    </p>
-    <div class="banner-demo" 
-      style="position: relative; width: 100%; max-width: 600px; height: 280px; margin: 8px auto 20px; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
-      <SeasonsFalling
-        :key="'banner-' + currentSeason"
-        :season="currentSeason"
-        :theme="theme"
-      />
-    </div> -->
-
   </div>
 </template>
 
 <style>
-/* 讓畫布撐滿全螢幕 */
-html, body, #app {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  transition: background-color 0.8s ease; /* 換季時背景平滑過渡 */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-#app {
-  background: #fff;
+:root {
+  --bg: hsl(0 0% 100%);
+  --text: hsl(0 0% 20%);
+  --btn-bg: rgba(255, 255, 255, 0.8);
+  --btn-border: rgba(0, 0, 0, 0.1);
+  --accent: rgba(0, 0, 0, 0.1); 
+  --accent-text: hsl(0 0% 13%);
 }
 
 #app.dark {
-  background: #1a1a1a;
+  --bg: hsl(240 10% 8%);
+  --text: hsl(0 0% 90%);
+  --btn-bg: rgba(40, 40, 40, 0.7);
+  --btn-border: rgba(255, 255, 255, 0.2);
+  --accent: rgba(255, 255, 255, 0.2);
+  --accent-text: #fff;
+}
+
+html, body, #app {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, system-ui, sans-serif;
+  background-color: var(--bg);
+  transition: background-color 0.8s ease;
 }
 
 .dashboard {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
-  pointer-events: auto;
   text-align: center;
+  width: 90%;
+  max-width: 500px;
 }
 
-.dashboard h1 { color: #888; font-weight: 300; margin-bottom: 20px; }
+.dashboard h1 {
+  color: var(--text);
+  font-weight: 200;
+  letter-spacing: 4px;
+  margin-bottom: 32px;
+  opacity: 0.8;
+  text-transform: lowercase;
+}
 
 .btn-group {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-/* light theme (default) */
 .btn-group button {
   padding: 10px 20px;
-  border: 1px solid #ddd;
-  background: white;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--text);
   cursor: pointer;
-  border-radius: 20px;
-  transition: all 0.3s;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.btn-group button:hover {
+  transform: translateY(-2px);
+  border-color: var(--text);
 }
 
 .btn-group button.active {
-  background: #333;
-  color: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+  box-shadow: 0 8px 20px -8px var(--accent);
 }
 
-/* dark theme */
-#app.dark h1 { color: #ccc; }
-#app.dark .btn-group button {
-  border-color: #444;
-  background: #2a2a2a;
-  color: #eee;
+.extra-controls button {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  min-width: 160px;
+  font-size: 12px;
 }
-#app.dark .btn-group button.active {
-  background: #5a9;
-  color: #111;
-  border-color: #5a9;
-}
-#app.dark .btn-group button.theme-btn:hover {
-  background: #3a3a3a;
-}
-#app.dark .stats { color: #999; }
 
 .stats {
-  margin-top: 15px;
-  font-size: 12px;
-  color: #999;
+  margin-top: 32px;
+  font-size: 11px;
+  color: var(--text);
+  opacity: 0.5;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 600px) {
+  .btn-group button { padding: 8px 16px; font-size: 12px; }
 }
 </style>

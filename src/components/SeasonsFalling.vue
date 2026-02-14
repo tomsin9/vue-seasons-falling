@@ -1,5 +1,6 @@
 <template>
     <canvas
+        ref="canvasRef"
         class="seasons-falling-canvas"
         :class="{ 'is-fullscreen': fullScreen }"
     ></canvas>
@@ -32,7 +33,7 @@ export default {
     },
     mounted() {
         const self = this;
-        const CANVAS = self.$el;
+        const CANVAS = self.$refs.canvasRef;
         const ctx = CANVAS.getContext('2d');
         let canvasHeight, canvasWidth;
         let flakes = [];
@@ -40,15 +41,20 @@ export default {
         let currentActiveSeason = self.season;
         let mouse = { x: -1000, y: -1000 }; // initial position outside the screen
 
+        if (!CANVAS) return;
+
         const onMouseMove = (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
+            const rect = CANVAS.getBoundingClientRect();
+            mouse.x = e.clientX - rect.left;
+            mouse.y = e.clientY - rect.top;
         };
 
         const onTouchMove = (e) => {
             if (e.touches.length > 0) {
-                mouse.x = e.touches[0].clientX;
-                mouse.y = e.touches[0].clientY;
+                const rect = CANVAS.getBoundingClientRect();
+                const touch = e.touches[0];
+                mouse.x = touch.clientX - rect.left;
+                mouse.y = touch.clientY - rect.top;
             }
         };
 
@@ -72,6 +78,9 @@ export default {
         };
 
         function updateCanvasSize() {
+            const oldWidth = canvasWidth;
+            const oldHeight = canvasHeight;
+
             if (self.fullScreen) {
                 canvasWidth = window.innerWidth;
                 canvasHeight = window.innerHeight;
@@ -80,8 +89,20 @@ export default {
                 canvasWidth = parent ? parent.offsetWidth : window.innerWidth;
                 canvasHeight = parent ? parent.offsetHeight : window.innerHeight;
             }
-            CANVAS.width = canvasWidth;
-            CANVAS.height = canvasHeight;
+
+            if (CANVAS.width !== canvasWidth || CANVAS.height !== canvasHeight) {
+                CANVAS.width = canvasWidth;
+                CANVAS.height = canvasHeight;
+
+                if (oldWidth && oldHeight) {
+                    const scaleX = canvasWidth / oldWidth;
+                    const scaleY = canvasHeight / oldHeight;
+                    flakes.forEach(flake => {
+                        flake.x *= scaleX;
+                        flake.y *= scaleY;
+                    });
+                }
+            }
         }
 
         function getSeasonByMonth() {
@@ -388,20 +409,18 @@ function getRgb(str) {
 </script>
 
 <style scoped>
-/* Default: fill parent layer without breaking user layout */
 .seasons-falling-canvas {
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
+    display: block;
     pointer-events: none;
 }
 
-/* Fullscreen mode: cover entire viewport */
 .seasons-falling-canvas.is-fullscreen {
     position: fixed;
-    width: 100vw;
-    height: 100vh;
+    inset: 0; 
+    width: 100%;
+    height: 100%;
 }
 </style>
