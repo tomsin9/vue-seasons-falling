@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-02-16
+
+### Improved
+- **TypeScript Support**: Shipped `index.d.ts` type definitions so TypeScript and editors get proper IntelliSense and type checking when using the component.
+- **Summer Particles**: Improved summer particle rendering and opacity handling for a more natural look.
+
 ## [0.2.2] - 2026-02-14
 
 ### Improved
