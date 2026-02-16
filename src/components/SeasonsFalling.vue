@@ -168,8 +168,9 @@ export default {
 
             // Summer: raining — uniform high speed, no swing, wind-driven slant
             if (currentActiveSeason === 'summer') {
+                const rSummer = random(baseSize * 0.2, baseSize * 1.4) / 2;
                 return {
-                    x, y, r,
+                    x, y: isInitial ? y : -rSummer * 4, r: rSummer,
                     velY: self.speed * 6,
                     velX: self.wind * 2,
                     stepSize: random(0.01, 0.04),
@@ -242,10 +243,11 @@ export default {
             ctx.save();
 
             if (season === 'summer') {
-                const dropLen = flake.velY * 1.5;
-                ctx.globalAlpha = theme === 'dark' ? 0.2 : 0.6;
-                ctx.strokeStyle = theme === 'light' ? 'rgba(147, 197, 253, 0.85)' : 'rgba(255, 255, 255, 0.5)';
-                ctx.lineWidth = 1;
+                const dropLen = flake.velY * (1 + flake.r * 0.6);
+                const summerAlpha = (theme === 'dark' ? 0.25 : 0.65) * flake.opacity;
+                ctx.globalAlpha = Math.min(1, summerAlpha);
+                ctx.strokeStyle = theme === 'light' ? `rgba(147, 197, 253, ${Math.min(1, flake.opacity * 1.1)})` : `rgba(255, 255, 255, ${Math.min(1, flake.opacity * 0.85)})`;
+                ctx.lineWidth = Math.max(0.8, 0.5 + flake.r * 0.5);
                 ctx.beginPath();
                 ctx.moveTo(flake.x, flake.y);
                 ctx.lineTo(flake.x + self.wind * 2 * (dropLen / 20), flake.y + dropLen);

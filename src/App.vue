@@ -144,6 +144,14 @@ html, body {
   text-align: center;
   width: 90%;
   max-width: 600px;
+  /* Let touch pass through to canvas for mouseInteraction on mobile; only interactive elements capture */
+  pointer-events: none;
+}
+
+.dashboard h1,
+.dashboard .btn-group button,
+.dashboard .stats,
+.dashboard a {
   pointer-events: auto;
 }
 
