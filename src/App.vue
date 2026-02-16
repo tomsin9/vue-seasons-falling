@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue';
 import SeasonsFalling from './components/SeasonsFalling.vue';
+import { version } from '../package.json';
 
 const seasons = ['spring', 'summer', 'autumn', 'winter'];
 const config = reactive({
@@ -72,7 +73,7 @@ const setTheme = () => {
       <footer class="stats">
         <span>Particles: 200</span>
         <span class="divider">|</span>
-        <span>v0.2.2 Stable</span>
+        <span>v{{ version }}</span>
       </footer>
     </div>
 
